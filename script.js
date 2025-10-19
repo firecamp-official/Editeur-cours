@@ -11,14 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
     themeBtn.textContent = '☀️ Mode Jour';
   }
 
-  // 🔄 Sauvegarde automatique
+  //  Sauvegarde automatique
   document.querySelectorAll('[contenteditable="true"]').forEach(el => {
     const key = el.id;
     if (localStorage.getItem(key)) el.innerHTML = localStorage.getItem(key);
     el.addEventListener('input', () => localStorage.setItem(key, el.innerHTML));
   });
 
-  // 📄 Export PDF multi-pages
+  //  Export PDF multi-pages
   document.getElementById('export-pdf').addEventListener('click', async () => {
     const element = document.getElementById('fiche-content');
     document.body.classList.add('pdf-mode');
@@ -33,12 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
         clonedDoc.querySelectorAll('.card').forEach(el => {
           el.style.backdropFilter = 'none';
           el.style.webkitBackdropFilter = 'none';
-          el.style.backgroundColor = '#ffffff'; // <- fond blanc pour le PDF
-          el.style.color = '#111';               // <- texte visible
+          el.style.backgroundColor = '#ffffff';
+          el.style.color = '#111';
           el.style.border = '1px solid #ccc';
         });
       }
-
     });
 
     const pdf = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait' });
@@ -65,18 +64,38 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.remove('pdf-mode');
   });
 
-  // 📌 Ajout dynamique de section
+  //  Bouton d'ajout de section
   const addSectionBtn = document.createElement('button');
-  addSectionBtn.textContent = '➕ Ajouter une section';
+  addSectionBtn.textContent = '+ Ajouter une section';
   document.querySelector('.toolbar').appendChild(addSectionBtn);
 
+  //  Fonction utilitaire pour supprimer une section
+  function addDeleteButton(section) {
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'X';
+    deleteBtn.classList.add('delete-btn');
+    section.appendChild(deleteBtn);
+
+    deleteBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (confirm('Supprimer cette section ?')) {
+        localStorage.removeItem(section.id);
+        section.remove();
+      }
+    });
+  }
+
+  // Appliquer la croix à toutes les sections existantes
+  document.querySelectorAll('.card').forEach(section => addDeleteButton(section));
+
+  // Création dynamique d'une nouvelle section
   addSectionBtn.addEventListener('click', () => {
     const sectionType = prompt('Type de section ? (texte, liste, code, retenir)', 'texte');
     if (!sectionType) return;
 
     const newSection = document.createElement('section');
     newSection.classList.add('card');
-    const id = 'section-' + Date.now(); // ID unique
+    const id = 'section-' + Date.now();
     newSection.id = id;
     newSection.contentEditable = true;
 
@@ -101,9 +120,43 @@ document.addEventListener('DOMContentLoaded', () => {
         newSection.innerHTML += `<p>Votre contenu ici...</p>`;
     }
 
+    addDeleteButton(newSection);
+    newSection.setAttribute('draggable', true);
     document.getElementById('fiche-content').appendChild(newSection);
-
-    // Sauvegarde automatique pour la nouvelle section
     newSection.addEventListener('input', () => localStorage.setItem(id, newSection.innerHTML));
+  });
+
+  // Déplacement des sections (drag & drop)
+  let draggedSection = null;
+
+  document.addEventListener('dragstart', e => {
+    if (e.target.classList.contains('card')) {
+      draggedSection = e.target;
+      e.dataTransfer.effectAllowed = 'move';
+      e.target.style.opacity = '0.5';
+    }
+  });
+
+  document.addEventListener('dragend', e => {
+    if (draggedSection) {
+      draggedSection.style.opacity = '1';
+      draggedSection = null;
+    }
+  });
+
+  document.addEventListener('dragover', e => {
+    e.preventDefault();
+    const target = e.target.closest('.card');
+    const container = document.getElementById('fiche-content');
+    if (target && draggedSection && target !== draggedSection) {
+      const rect = target.getBoundingClientRect();
+      const next = e.clientY > rect.top + rect.height / 2;
+      container.insertBefore(draggedSection, next ? target.nextSibling : target);
+    }
+  });
+
+  // Rendre toutes les sections existantes draggables
+  document.querySelectorAll('.card').forEach(section => {
+    section.setAttribute('draggable', true);
   });
 });
