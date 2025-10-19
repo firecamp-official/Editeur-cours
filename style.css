@@ -142,3 +142,44 @@ body.pdf-mode .card {
   backdrop-filter: none !important;
   border: 1px solid #ccc !important;
 }
+
+
+/* ❌ Bouton de suppression — rond permanent */
+.delete-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 50%;          /* Forme circulaire */
+  width: 32px;                 /* Taille légèrement plus grande */
+  height: 32px;
+  font-size: 1.1rem;           /* Taille du symbole ❌ */
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0.9;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2); /* Petit effet de relief */
+}
+
+.delete-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+  background: var(--primary);
+}
+
+
+
+
+.card[draggable="true"] {
+  cursor: grab;
+}
+.card[draggable="true"]:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
