@@ -89,42 +89,75 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.card').forEach(section => addDeleteButton(section));
 
   // Création dynamique d'une nouvelle section
-  addSectionBtn.addEventListener('click', () => {
-    const sectionType = prompt('Type de section ? (texte, liste, code, retenir)', 'texte');
-    if (!sectionType) return;
+// Création dynamique d'une nouvelle section
+addSectionBtn.addEventListener('click', () => {
+  const sectionType = prompt('Type de section ? (texte, liste, code, retenir, image)', 'texte');
+  if (!sectionType) return;
 
-    const newSection = document.createElement('section');
-    newSection.classList.add('card');
-    const id = 'section-' + Date.now();
-    newSection.id = id;
-    newSection.contentEditable = true;
+  const newSection = document.createElement('section');
+  newSection.classList.add('card');
+  const id = 'section-' + Date.now();
+  newSection.id = id;
+  newSection.contentEditable = true;
 
-    let h2Text = prompt('Titre de la section', 'Nouvelle section');
-    newSection.innerHTML = `<h2>${h2Text}</h2>`;
+  let h2Text = prompt('Titre de la section', 'Nouvelle section');
+  newSection.innerHTML = `<h2>${h2Text}</h2>`;
 
-    switch (sectionType.toLowerCase()) {
-      case 'texte':
-        newSection.innerHTML += `<p>Votre contenu ici...</p>`;
-        break;
-      case 'liste':
-        newSection.innerHTML += `<ul><li>Point 1</li><li>Point 2</li></ul>`;
-        break;
-      case 'code':
-        newSection.innerHTML += `<pre><code class="code-block">console.log('Hello NSI!');</code></pre>`;
-        break;
-      case 'retenir':
-        newSection.classList.add('highlight');
-        newSection.innerHTML += `<p>À retenir...</p>`;
-        break;
-      default:
-        newSection.innerHTML += `<p>Votre contenu ici...</p>`;
-    }
+  switch (sectionType.toLowerCase()) {
+    case 'texte':
+      newSection.innerHTML += `<p>Votre contenu ici...</p>`;
+      break;
+    case 'liste':
+      newSection.innerHTML += `<ul><li>Point 1</li><li>Point 2</li></ul>`;
+      break;
+    case 'code':
+      newSection.innerHTML += `<pre><code class="code-block">console.log('Hello NSI!');</code></pre>`;
+      break;
+    case 'retenir':
+      newSection.classList.add('highlight');
+      newSection.innerHTML += `<p>À retenir...</p>`;
+      break;
+    case 'image':
+      newSection.contentEditable = false; // éviter de casser l'image en éditant
+      const uploadInput = document.createElement('input');
+      uploadInput.type = 'file';
+      uploadInput.accept = 'image/*';
+      uploadInput.style.marginTop = '1rem';
 
-    addDeleteButton(newSection);
-    newSection.setAttribute('draggable', true);
-    document.getElementById('fiche-content').appendChild(newSection);
-    newSection.addEventListener('input', () => localStorage.setItem(id, newSection.innerHTML));
-  });
+      const img = document.createElement('img');
+      img.style.maxWidth = '100%';
+      img.style.borderRadius = '12px';
+      img.style.marginTop = '1rem';
+      img.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+
+      uploadInput.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          img.src = ev.target.result;
+          localStorage.setItem(id + '_img', img.src);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // Charger l'image si elle existe déjà
+      const savedImg = localStorage.getItem(id + '_img');
+      if (savedImg) img.src = savedImg;
+
+      newSection.appendChild(uploadInput);
+      newSection.appendChild(img);
+      break;
+    default:
+      newSection.innerHTML += `<p>Votre contenu ici...</p>`;
+  }
+
+  addDeleteButton(newSection);
+  newSection.setAttribute('draggable', true);
+  document.getElementById('fiche-content').appendChild(newSection);
+  newSection.addEventListener('input', () => localStorage.setItem(id, newSection.innerHTML));
+});
+
 
   // Déplacement des sections (drag & drop)
   let draggedSection = null;
