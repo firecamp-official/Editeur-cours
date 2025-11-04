@@ -11,14 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
     themeBtn.textContent = '☀️ Mode Jour';
   }
 
-  //  Sauvegarde automatique
+  // 💾 Sauvegarde automatique du contenu éditable
   document.querySelectorAll('[contenteditable="true"]').forEach(el => {
     const key = el.id;
     if (localStorage.getItem(key)) el.innerHTML = localStorage.getItem(key);
     el.addEventListener('input', () => localStorage.setItem(key, el.innerHTML));
   });
 
-  //  Export PDF multi-pages
+  // 📄 Export PDF multi-pages
   document.getElementById('export-pdf').addEventListener('click', async () => {
     const element = document.getElementById('fiche-content');
     document.body.classList.add('pdf-mode');
@@ -64,12 +64,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.remove('pdf-mode');
   });
 
-  //  Bouton d'ajout de section
+  // ➕ Bouton d'ajout de section
   const addSectionBtn = document.createElement('button');
   addSectionBtn.textContent = '+ Ajouter une section';
   document.querySelector('.toolbar').appendChild(addSectionBtn);
 
-  //  Fonction utilitaire pour supprimer une section
+  // ❌ Fonction pour ajouter un bouton de suppression
   function addDeleteButton(section) {
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'X';
@@ -80,86 +80,144 @@ document.addEventListener('DOMContentLoaded', () => {
       e.stopPropagation();
       if (confirm('Supprimer cette section ?')) {
         localStorage.removeItem(section.id);
+        localStorage.removeItem(section.id + '_img');
         section.remove();
       }
     });
   }
 
-  // Appliquer la croix à toutes les sections existantes
+  // 🧩 Appliquer la croix à toutes les sections existantes
   document.querySelectorAll('.card').forEach(section => addDeleteButton(section));
 
-  // Création dynamique d'une nouvelle section
-// Création dynamique d'une nouvelle section
-addSectionBtn.addEventListener('click', () => {
-  const sectionType = prompt('Type de section ? (texte, liste, code, retenir, image)', 'texte');
-  if (!sectionType) return;
+  // 🧱 Création dynamique d'une nouvelle section
+  addSectionBtn.addEventListener('click', () => {
+    const sectionType = prompt('Type de section ? (texte, liste, code, retenir, image)', 'texte');
+    if (!sectionType) return;
 
-  const newSection = document.createElement('section');
-  newSection.classList.add('card');
-  const id = 'section-' + Date.now();
-  newSection.id = id;
-  newSection.contentEditable = true;
+    const newSection = document.createElement('section');
+    newSection.classList.add('card');
+    const id = 'section-' + Date.now();
+    newSection.id = id;
+    newSection.contentEditable = true;
 
-  let h2Text = prompt('Titre de la section', 'Nouvelle section');
-  newSection.innerHTML = `<h2>${h2Text}</h2>`;
+    let h2Text = prompt('Titre de la section', 'Nouvelle section');
+    newSection.innerHTML = `<h2>${h2Text}</h2>`;
 
-  switch (sectionType.toLowerCase()) {
-    case 'texte':
-      newSection.innerHTML += `<p>Votre contenu ici...</p>`;
-      break;
-    case 'liste':
-      newSection.innerHTML += `<ul><li>Point 1</li><li>Point 2</li></ul>`;
-      break;
-    case 'code':
-      newSection.innerHTML += `<pre><code class="code-block">console.log('Hello NSI!');</code></pre>`;
-      break;
-    case 'retenir':
-      newSection.classList.add('highlight');
-      newSection.innerHTML += `<p>À retenir...</p>`;
-      break;
-    case 'image':
-      newSection.contentEditable = false; // éviter de casser l'image en éditant
-      const uploadInput = document.createElement('input');
-      uploadInput.type = 'file';
-      uploadInput.accept = 'image/*';
-      uploadInput.style.marginTop = '1rem';
+    switch (sectionType.toLowerCase()) {
+      case 'texte':
+        newSection.innerHTML += `<p>Votre contenu ici...</p>`;
+        break;
+      case 'liste':
+        newSection.innerHTML += `<ul><li>Point 1</li><li>Point 2</li></ul>`;
+        break;
+      case 'code':
+        newSection.innerHTML += `<pre><code class="code-block">console.log('Hello NSI!');</code></pre>`;
+        break;
+      case 'retenir':
+        newSection.classList.add('highlight');
+        newSection.innerHTML += `<p>À retenir...</p>`;
+        break;
+      case 'image':
+        newSection.contentEditable = false; // éviter de casser l'image
+        const uploadInput = document.createElement('input');
+        uploadInput.type = 'file';
+        uploadInput.accept = 'image/*';
+        uploadInput.style.marginTop = '1rem';
 
-      const img = document.createElement('img');
-      img.style.maxWidth = '100%';
-      img.style.borderRadius = '12px';
-      img.style.marginTop = '1rem';
-      img.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+        const img = document.createElement('img');
+        img.style.maxWidth = '100%';
+        img.style.borderRadius = '12px';
+        img.style.marginTop = '1rem';
+        img.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
 
-      uploadInput.addEventListener('change', e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = ev => {
-          img.src = ev.target.result;
-          localStorage.setItem(id + '_img', img.src);
-        };
-        reader.readAsDataURL(file);
-      });
+        uploadInput.addEventListener('change', e => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = ev => {
+            img.src = ev.target.result;
+            localStorage.setItem(id + '_img', img.src);
+          };
+          reader.readAsDataURL(file);
+        });
 
-      // Charger l'image si elle existe déjà
-      const savedImg = localStorage.getItem(id + '_img');
-      if (savedImg) img.src = savedImg;
+        // Charger une image existante si elle est sauvegardée
+        const savedImg = localStorage.getItem(id + '_img');
+        if (savedImg) img.src = savedImg;
 
-      newSection.appendChild(uploadInput);
-      newSection.appendChild(img);
-      break;
-    default:
-      newSection.innerHTML += `<p>Votre contenu ici...</p>`;
+        newSection.appendChild(uploadInput);
+        newSection.appendChild(img);
+        break;
+      default:
+        newSection.innerHTML += `<p>Votre contenu ici...</p>`;
+    }
+
+    addDeleteButton(newSection);
+    newSection.setAttribute('draggable', true);
+    document.getElementById('fiche-content').appendChild(newSection);
+    newSection.addEventListener('input', () => localStorage.setItem(id, newSection.innerHTML));
+  });
+
+  // 🔁 Restaurer les sections personnalisées (y compris images)
+  for (let key in localStorage) {
+    if (key.startsWith('section-') && !document.getElementById(key) && !key.endsWith('_img')) {
+      const div = document.createElement('section');
+      div.classList.add('card');
+      div.id = key;
+      div.setAttribute('draggable', true);
+      div.innerHTML = localStorage.getItem(key);
+      addDeleteButton(div);
+
+      // Restaurer image si elle existe
+      const savedImg = localStorage.getItem(key + '_img');
+      if (savedImg) {
+        const img = div.querySelector('img');
+        if (img) img.src = savedImg;
+      }
+
+      document.getElementById('fiche-content').appendChild(div);
+    }
   }
 
-  addDeleteButton(newSection);
-  newSection.setAttribute('draggable', true);
-  document.getElementById('fiche-content').appendChild(newSection);
-  newSection.addEventListener('input', () => localStorage.setItem(id, newSection.innerHTML));
-});
+  // 📋 Coller une image (Ctrl+V)
+  document.addEventListener('paste', e => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
 
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const newSection = document.createElement('section');
+          newSection.classList.add('card');
+          newSection.id = 'section-' + Date.now();
+          newSection.contentEditable = false;
 
-  // Déplacement des sections (drag & drop)
+          const h2 = document.createElement('h2');
+          h2.textContent = 'Image collée';
+          const img = document.createElement('img');
+          img.src = ev.target.result;
+          img.style.maxWidth = '100%';
+          img.style.borderRadius = '12px';
+          img.style.marginTop = '1rem';
+          img.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+
+          newSection.appendChild(h2);
+          newSection.appendChild(img);
+          addDeleteButton(newSection);
+          document.getElementById('fiche-content').appendChild(newSection);
+
+          // Sauvegarde locale
+          localStorage.setItem(newSection.id + '_img', ev.target.result);
+          localStorage.setItem(newSection.id, newSection.innerHTML);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  });
+
+  // 🔄 Déplacement des sections (drag & drop)
   let draggedSection = null;
 
   document.addEventListener('dragstart', e => {
@@ -188,7 +246,7 @@ addSectionBtn.addEventListener('click', () => {
     }
   });
 
-  // Rendre toutes les sections existantes draggables
+  // ✅ Rendre toutes les sections existantes draggables
   document.querySelectorAll('.card').forEach(section => {
     section.setAttribute('draggable', true);
   });
