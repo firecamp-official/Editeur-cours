@@ -183,3 +183,11 @@ body.pdf-mode .card {
   cursor: grabbing;
   transform: scale(0.98);
 }
+.card img {
+  display: block;
+  margin: 1rem auto;
+  border-radius: 12px;
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
